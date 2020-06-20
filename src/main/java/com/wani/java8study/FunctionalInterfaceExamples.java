@@ -3,9 +3,11 @@ package com.wani.java8study;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class FunctionalInterfaceExamples {
 
@@ -56,6 +58,20 @@ public class FunctionalInterfaceExamples {
         }
         System.out.println("positive integers:" + positiveNumbers);
 
+
+        final Supplier<String> helloSupplier = () -> "Hello ";
+
+        String s = helloSupplier.get();
+        System.out.println("s = " + s);
+
+
+        long start = System.currentTimeMillis();
+
+        suppliedIndex(0, FunctionalInterfaceExamples::getVeryExpensiveValue);
+        suppliedIndex(-1, () -> getVeryExpensiveValue());
+        suppliedIndex(-2, () -> getVeryExpensiveValue());
+
+        System.out.println("It took " + ((System.currentTimeMillis() - start) / 1000));
     }
     /*
      * 자바에서는 함수타입을 도입한게 아니기 때문에
@@ -95,4 +111,33 @@ public class FunctionalInterfaceExamples {
         return result;
     }
 
+    /*
+     * Supplier
+     * */
+
+    private static void printIfValidIndex(int number, String value) {
+        if (number >= 0) {
+            System.out.println("The value is " + value + ".");
+        } else {
+            System.out.println("Invalid");
+        }
+    }
+
+    private static String getVeryExpensiveValue() {
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        // Let' just say it has very expensive calculation here;
+        return "Wani";
+    }
+
+    private static void suppliedIndex(int number, Supplier<String> valueSupplier) {
+        if (number >= 0) {
+            System.out.println("The value is " + valueSupplier.get() + ".");
+        } else {
+            System.out.println("Invalid");
+        }
+    }
 }
