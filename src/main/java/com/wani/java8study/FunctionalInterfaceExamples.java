@@ -1,7 +1,11 @@
 package com.wani.java8study;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class FunctionalInterfaceExamples {
 
@@ -17,13 +21,12 @@ public class FunctionalInterfaceExamples {
      * */
 
 
-
     public static void main(String[] args) {
         final Function<String, Integer> toInt = value -> Integer.parseInt(value);
         Integer apply = toInt.apply("100");
         System.out.println("apply = " + apply);
 
-        final Function<Integer ,Integer> identity = Function.identity();
+        final Function<Integer, Integer> identity = Function.identity();
         Integer apply1 = identity.apply(999);
         System.out.println("apply1 = " + apply1);
 
@@ -35,12 +38,34 @@ public class FunctionalInterfaceExamples {
         };
 //        final Function<String , Void> print2 = value -> System.out.println("value = " + value);
         print.accept("tttt");
+
+
+        Predicate<Integer> isPositive = integer -> integer > 0;
+
+        List<Integer> numbers = Arrays.asList(-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5);
+
+        List<Integer> filter = filter(numbers, isPositive);
+        System.out.println("filter = " + filter);
+
+        List<Integer> positiveNumbers = new ArrayList<>();
+        for (Integer number : numbers) {
+            if (isPositive.test(number)) {
+                positiveNumbers.add(number);
+
+            }
+        }
+        System.out.println("positive integers:" + positiveNumbers);
+
     }
     /*
      * 자바에서는 함수타입을 도입한게 아니기 때문에
      * 일반 오브젝트 사용한다.
      * */
 
+
+    /*
+     * Predicate
+     * */
     public int toInt(String value) {
         return Integer.parseInt(value);
     }
@@ -58,4 +83,16 @@ public class FunctionalInterfaceExamples {
     public String identity(String value) {
         return value;
     }
+
+    private static <T> List<T> filter(List<T> list, Predicate<T> filter) {
+        List<T> result = new ArrayList<>();
+        for (T input : list) {
+            if (filter.test(input)) {
+                result.add(input);
+            }
+        }
+
+        return result;
+    }
+
 }
