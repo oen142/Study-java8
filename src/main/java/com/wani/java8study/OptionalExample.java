@@ -25,6 +25,6 @@ public class OptionalExample {
     /*
      * 널포인터 익셉션
      * 널값을 최대한 없애보고자 하는 노력을 했다.
-     *
+     * Optional
      * */
 }
