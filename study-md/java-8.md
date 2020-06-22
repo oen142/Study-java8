@@ -121,4 +121,148 @@ Java8의 핵심은 간결한 코드와 멀티고어 프로세서의 간단한 �
                 
                     
         
+메서드 레퍼런스
+- 특정 메서드만을 호출하는 람다의 축약형
+- 가독성을 높일수 있다.
+- 메서드명 앞에 구분자 :: 를 붙이는 방식
+
+
+(Apple a) -> a.getWeight
+Apple::getWeight
+
+() -> Thread.currentThread().dumpStack()
+Thread.currentThread()::dumpStack
+
+(str,i) -> str.substring(i)
+String::subString
+
+(String s) -> System.out.println(s)
+System.out::println
+
+() -> expensiveTransaction.getValue()
+expensiveTransaction::getValue
+
+Apple::new;
+
+
+4. 스트림 소개
+- 스트림이란 데이터 처리 연산을 지원하는 소스에서 추출된 연속된 요소
+- 중간연산
+- 최종연산
+
+5. 스트림 활용
+
+- 필터링과 슬라이싱
+    - filter
+        - .filter(Dish::isVegetarian)
+        - .filter(i -> i%2 ==0)
+    - distinct
+        - 고유한 요소 필터링
+        - .distinct
+        
+    - limit
+        - 스트림 축소
+        - .limit(3)
+    - skip
+        - 요소 건너뛰기
+        - .skip(2)
+        
+- 매핑
+    - map
+        - 스트림의 각 요소에 함수 적용하기
+        - .map(Dish::getName)
+        - .map(String::length)
+        - .map(n -> n*n)
+        
+    - flapMap
+        - 스트림 평면화
+        - 스트림의 각 값을 다른 스트림으로 만든 다음에 모든 스트림을 하나의 스트림으로 연결
+        - .flapMap(Arrays::stream)
+        
+- 검색과 매칭
+    - anyMatch
+        - 적어도 한 요소와 일치하는지 검사
+        - 최종연산
+        - .anyMatch(Dish::isVegetarian)
+    - allMatch
+        - 모든 요소와 일치하는지 검사
+        - 최종연산
+        - .allMatch(d -> d.getCalories() < 1000)
+        
+    - noneMatch
+        - 일치하는 요소가 없는지 검사
+        - 최종 연산
+        - .nonMatch(d -> d.getCalories() < 1000)
+    - 쇼트서킷
+        - 자바의 && , || 같은 연산
+        - 하나라도 거짓이라는 결과가 나오면 나머지 표현식은 평가하지 않고 결과를 반환하는 상황을 부르는 말
+        - anyMatch, allMatch , noneMatch , limit 등은 쇼트 서킷
+    - findAny
+        - 임의의 요소를 반환, 랜덤
+        - 최종 연산
+        - .findAny()
+        - 아무 요소도 반환하지 않을 수 있음
+        - 그래서 null 대신 Optional<T> 를 반환
+    - Optional
+        - null은 쉽게 에러를 만들 수 있으므로 대신 사용
+        - isPresent() : 값이 있는가 여부
+        - ifPresent(Consumer<T> block) : 값이 있으면 주어진 블록 실행
+        - T get() : 값이 있으면 반환, 없으면 NoSuchElementException
+        - T orElse(T other) : 값이 있으면 반환 , 없으면 기본값 반환
+        
+            menu.stream()
+                .filter(Dish::isVegetarian)
+                .findAny
+                .ifPresent(d -> System.out.println(d.getName()));
+                
+    - findFirst
+        - 첫번째 요소 찾기
+        - Optional<T>를 반환
+        - .findFirst()
+        
+리듀싱
+- 모든 스트림 요소를 처리해서 값을 도출
+    - 함수형 프로그래밍 언어로는 종이를 작은 조각이 될 때까지 반복해서 접는 것과 비슷하다는 의미로 폴드 fold라고 부름
+- 합 구하기
+    int sum = numbers.stream().reduce(0 , (a,b)->a +b);
+    - 초기값이 없으면
+        Optional<Integer> sum = numbers.stream()
+                                    .reduce((a,b) -> a+b);
+
+- 최대값 구하기
+    Optional<Integer> max = numbers.stream()
+                                    .reduce(Integer::max);
+
+
+숫자 스트림
+- 기본형 특화 스트림
+    - 박싱 비용을 피하기 위해 제공
+    - IntStream , DoubleStream, LongStream
+    - .mapToInt(Dish::getCalories)
+    - max, mim, average 등 다양한 유틸리티 메서드 지원
+    - 객체 스트림으로 복원하려면
+        IntStream intStream = menu.stream().mapToInt(Dish::getCalories);
+        Stream<Integer> stream = intStream.boxed();
+    - 스트림에 요소가 없을때 기본값
+    - OptionalInt , OptionalDouble , OptionalLong
+        OptionalInt maxCalories = menu.stream().mapToInt(Dish::getCalories).max();
+        int max = maxCalories.orElse(1);
+- 숫자 범위
+    - .range(1 , 100) : 1과 100은 미포함
+    - .rangeClosed(1, 100) : 모두 포함
+- 스트림 만들기
+    - 값으로 만들기
+        Stream.of("java8" , "lambdas" , "in" , "action")
+        Stream.empty()
+    - 배열로 만들기
+        int[]  numbers = {2,3,5,7,11,13}
+        int sum = Arrays.stream(numbers).sum();
+    - 파일로 만들기
+        Stream<String> line = Files.lines(Paths.get("data.txt"), Charset.defaultCharset());
+        long uniqueWords = lines.flatMap(line -> Arrays.stream(line.split(" ")))
+                              .distinct()
+                              .count();
+    - 함수로 만들기
+        - 무한스트림 infinite stream 즉 크기가 고정되지 않은 스트림
+        - 언바운드 스트림 unbound stream 이라고 표현                                
     
